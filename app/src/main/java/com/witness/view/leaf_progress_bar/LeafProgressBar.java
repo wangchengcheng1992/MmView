@@ -10,6 +10,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.witness.myview.R;
@@ -20,10 +21,17 @@ import java.util.Random;
 
 public class LeafProgressBar extends View {
 
+    private static final String TAG = "LeafProgressBar";
+
     // 淡白色
     private static final int WHITE_COLOR = 0xfffde399;
     // 橙色
     private static final int ORANGE_COLOR = 0xffffa800;
+
+    // 总进度
+    private static final int TOTAL_PROGRESS = 100;
+    // 当前进度
+    private int mProgress = 50;
 
     // 用于控制绘制的进度条距离左／上／下的距离
     private static final int LEFT_MARGIN = 9;
@@ -138,11 +146,86 @@ public class LeafProgressBar extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+//        canvas.drawRect(mWhiteRectF, mWhitePaint);
+        //绘制进度条 （同时绘制小树叶）
+        drawProgress(canvas);
+
         //绘制图片
         canvas.drawBitmap(mProgressBackgroundBitmap, mProgressBackgroundSrcRect, mProgressBackgroundDestRect, mBitmapPaint);
 
-        canvas.drawRect(mWhiteRectF, mWhitePaint);
+
         postInvalidate();
+    }
+
+    /**
+     * 绘制进度条
+     * @param canvas canvas
+     */
+    private void drawProgress(Canvas canvas) {
+        //如果当前进度大于100， 设置为100
+        if (mProgress >= TOTAL_PROGRESS){
+            mProgress = 100;
+        }
+
+        //当前所在的绘制的进度条的位置 = 进度条总长 * 当前进度所占比例
+        mCurrentProgressPosition = mProgressWidth * mProgress / TOTAL_PROGRESS;
+
+        //如果当前进度很小的时候（即：在进度条最左侧的圆角范围之内），这个时候我们需要绘制的部分应该是一段圆弧
+        if (mCurrentProgressPosition < mArcRadius){
+            Log.i(TAG, "mProgress = " + mProgress + "\nmCurrentProgressPosition = "
+                    + mCurrentProgressPosition
+                    + "\nmArcProgressWidth" + mArcRadius);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //这块是绘制进度条的底色 （圆弧 + 矩形）
+            // 绘制前一段进度条圆弧
+            canvas.drawArc(mArcRectF, 90, 180, false, mWhitePaint);
+            // 绘制白色矩形
+            mWhiteRectF.left = mArcRightLocation;
+            canvas.drawRect(mWhiteRectF, mWhitePaint);
+
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // 绘制叶子
+            drawLeafs(canvas);
+
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // 绘制 实际当前进度条   深色
+            // 单边角度 cos angle = （mArcRadius - mCurrentProgressPosition）/ mArcRadius
+            int angle = (int) Math.toDegrees(Math.acos((mArcRadius - mCurrentProgressPosition)
+                    / (float) mArcRadius));
+            // 起始角度
+            int startAngle = 180 - angle;
+            // 扫过角度
+            int sweepAngle = 2 * angle;
+            Log.i(TAG, "startAngle = " + startAngle);
+            canvas.drawArc(mArcRectF, startAngle, sweepAngle, false, mOrangePaint);
+        } else {
+            //如果当前进度大于最左侧的弧形区域时， 右边的剩余进度区域就是一个矩形， 我们可以先绘制剩余的底色部分  再绘制左侧
+            // 绘制底色 RECT
+            mWhiteRectF.left = mCurrentProgressPosition;
+            canvas.drawRect(mWhiteRectF, mWhitePaint);
+
+            // 绘制叶子
+            drawLeafs(canvas);
+
+            //绘制实际进度 （两个部分：弧形 + 矩形）
+            //绘制弧形
+            canvas.drawArc(mArcRectF, 90, 180, false, mOrangePaint);
+            //绘制矩形
+            mOrangeRectF.left = mArcRightLocation;
+            mOrangeRectF.right = mCurrentProgressPosition;
+            canvas.drawRect(mOrangeRectF, mOrangePaint);
+        }
+    }
+
+    /**
+     * 绘制小树叶
+     * @param canvas canvas
+     */
+    private void drawLeafs(Canvas canvas) {
+
     }
 
     @Override
