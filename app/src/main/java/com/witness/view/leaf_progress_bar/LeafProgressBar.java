@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -23,15 +24,15 @@ public class LeafProgressBar extends View {
 
     private static final String TAG = "LeafProgressBar";
 
-    // 淡白色
+    // 浅色 ---进度条的背景色
     private static final int WHITE_COLOR = 0xfffde399;
-    // 橙色
+    // 橙色 ---实际进度条颜色
     private static final int ORANGE_COLOR = 0xffffa800;
 
     // 总进度
     private static final int TOTAL_PROGRESS = 100;
     // 当前进度
-    private int mProgress = 50;
+    private int mProgress;
 
     // 用于控制绘制的进度条距离左／上／下的距离
     private static final int LEFT_MARGIN = 9;
@@ -47,6 +48,16 @@ public class LeafProgressBar extends View {
     private long mLeafFloatTime = LEAF_FLOAT_TIME;
     // 叶子旋转一周需要的时间
     private long mLeafRotateTime = LEAF_ROTATE_TIME;
+
+    // 中等振幅大小
+    private static final int MIDDLE_AMPLITUDE = 13;
+    // 不同类型之间的振幅差距
+    private static final int AMPLITUDE_DISPARITY = 5;
+
+    // 中等振幅大小
+    private int mMiddleAmplitude = MIDDLE_AMPLITUDE;
+    // 振幅差
+    private int mAmplitudeDisparity = AMPLITUDE_DISPARITY;
 
     // 用于控制随机增加的时间不抱团
     private int mAddTime;
@@ -225,7 +236,98 @@ public class LeafProgressBar extends View {
      * @param canvas canvas
      */
     private void drawLeafs(Canvas canvas) {
+        //设置小树叶旋转一周所需要的时间
+        mLeafRotateTime = mLeafRotateTime <= 0 ? LEAF_ROTATE_TIME : mLeafRotateTime;
 
+        long currentTime = System.currentTimeMillis();
+
+        for (int i = 0; i < mLeafInfos.size(); i++) {
+            //取出一片树叶
+            Leaf leaf = mLeafInfos.get(i);
+            if (currentTime > leaf.startTime && leaf.startTime != 0){
+                // 绘制叶子－－根据叶子的类型和当前时间得出叶子的坐标（x，y）
+                getLeafLocation(leaf, currentTime);
+                // 根据时间计算旋转角度
+                canvas.save();
+                // 通过Matrix控制叶子旋转
+                Matrix matrix = new Matrix();
+                float transX = mLeftMargin + leaf.x;
+                float transY = mLeftMargin + leaf.y;
+                Log.i(TAG, "left.x = " + leaf.x + "--leaf.y=" + leaf.y);
+                matrix.postTranslate(transX, transY);
+
+
+                // 通过时间关联旋转角度，则可以直接通过修改LEAF_ROTATE_TIME调节叶子旋转快慢
+                float rotateFraction = ((currentTime - leaf.startTime) % mLeafRotateTime)
+                        / (float) mLeafRotateTime;
+                int angle = (int) (rotateFraction * 360);
+                // 根据叶子旋转方向确定叶子旋转角度
+                int rotate = leaf.rotateDirection == 0 ? angle + leaf.rotateAngle : -angle
+                        + leaf.rotateAngle;
+                matrix.postRotate(rotate, transX
+                        + mLeafWidth / 2, transY + mLeafHeight / 2);
+                canvas.drawBitmap(mLeafBitmap, matrix, mBitmapPaint);
+                canvas.restore();
+            }
+        }
+    }
+
+    private void getLeafLocation(Leaf leaf, long currentTime) {
+        long intervalTime = currentTime - leaf.startTime;//小树叶的飘动时长
+        mLeafFloatTime = mLeafFloatTime <= 0 ? LEAF_FLOAT_TIME : mLeafFloatTime;
+        if (intervalTime < 0) {
+            return;
+        } else if (intervalTime > mLeafFloatTime) {     //小树叶的年龄（产生至今的时间） > 飘动一个周期的时间（从右飘到左边的时间）
+            leaf.startTime = System.currentTimeMillis() //树叶startTime = 当前时间 + 加一个随机值    -----产生每个小树叶的时间差
+                    + new Random().nextInt((int) mLeafFloatTime);
+        }
+
+        float fraction = (float) intervalTime / mLeafFloatTime;
+
+
+        //树叶飘动走过的路程 = mProgressWidth * fraction， 从而可以算出树叶的坐标
+        //x左边
+        leaf.x = getLocationX(leaf, fraction);
+        //y坐标，需要使用震动幅度
+        leaf.y = getLocationY(leaf);
+    }
+
+    /**
+     * 计算树叶某时刻的横坐标值---x
+     * @param leaf          树叶对象
+     * @param fraction      时间系数
+     * @return              x坐标
+     */
+    private int getLocationX(Leaf leaf, float fraction){
+        return (int) (mProgressWidth - mProgressWidth * fraction);
+    }
+
+    /**
+     * 计算树叶某时刻的纵坐标值---y
+     * @param leaf      树叶对象
+     * @return          y坐标
+     */
+    private int getLocationY(Leaf leaf) {
+        // y = A(wx+Q)+h
+        float w = (float) ((float) 2 * Math.PI / mProgressWidth);
+        float a = mMiddleAmplitude;
+        switch (leaf.type) {
+            case LITTLE:
+                // 小振幅 ＝ 中等振幅 － 振幅差
+                a = mMiddleAmplitude - mAmplitudeDisparity;
+                break;
+            case MIDDLE:
+                a = mMiddleAmplitude;
+                break;
+            case BIG:
+                // 小振幅 ＝ 中等振幅 + 振幅差
+                a = mMiddleAmplitude + mAmplitudeDisparity;
+                break;
+            default:
+                break;
+        }
+        Log.i(TAG, "---a = " + a + "---w = " + w + "--leaf.x = " + leaf.x);
+        return (int) (a * Math.sin(w * leaf.x)) + mArcRadius * 2 / 3;
     }
 
     @Override
@@ -294,7 +396,7 @@ public class LeafProgressBar extends View {
         Random random = new Random();
 
         //生成一个小树叶
-        public Leaf generateLeaf(){
+        Leaf generateLeaf(){
             Leaf leaf = new Leaf();
 
             //生成（0，1，2）中的一个随机类型
@@ -330,12 +432,12 @@ public class LeafProgressBar extends View {
         }
 
         // 根据最大叶子数产生叶子信息
-        public List<Leaf> generateLeafs() {
+        List<Leaf> generateLeafs() {
             return generateLeafs(MAX_LEAFS);
         }
 
         // 根据传入的叶子数量产生叶子信息
-        public List<Leaf> generateLeafs(int leafSize) {
+        List<Leaf> generateLeafs(int leafSize) {
             List<Leaf> leafs = new LinkedList<Leaf>();
             for (int i = 0; i < leafSize; i++) {
                 leafs.add(generateLeaf());
@@ -346,5 +448,73 @@ public class LeafProgressBar extends View {
 
     private enum StartType {
         LITTLE, MIDDLE, BIG
+    }
+
+    /**
+     * 设置中等振幅
+     */
+    public void setMiddleAmplitude(int amplitude) {
+        this.mMiddleAmplitude = amplitude;
+    }
+
+    /**
+     * 设置振幅差
+     */
+    public void setMplitudeDisparity(int disparity) {
+        this.mAmplitudeDisparity = disparity;
+    }
+
+    /**
+     * 获取中等振幅
+     */
+    public int getMiddleAmplitude() {
+        return mMiddleAmplitude;
+    }
+
+    /**
+     * 获取振幅差
+     */
+    public int getMplitudeDisparity() {
+        return mAmplitudeDisparity;
+    }
+
+    /**
+     * 设置进度
+     *
+     * @param progress 当前进度
+     */
+    public void setProgress(int progress) {
+        this.mProgress = progress;
+        postInvalidate();
+    }
+
+    /**
+     * 设置叶子飘完一个周期所花的时间
+     */
+    public void setLeafFloatTime(long time) {
+        this.mLeafFloatTime = time;
+    }
+
+    /**
+     * 设置叶子旋转一周所花的时间
+     */
+    public void setLeafRotateTime(long time) {
+        this.mLeafRotateTime = time;
+    }
+
+    /**
+     * 获取叶子飘完一个周期所花的时间
+     */
+    public long getLeafFloatTime() {
+        mLeafFloatTime = mLeafFloatTime == 0 ? LEAF_FLOAT_TIME : mLeafFloatTime;
+        return mLeafFloatTime;
+    }
+
+    /**
+     * 获取叶子旋转一周所花的时间
+     */
+    public long getLeafRotateTime() {
+        mLeafRotateTime = mLeafRotateTime == 0 ? LEAF_ROTATE_TIME : mLeafRotateTime;
+        return mLeafRotateTime;
     }
 }

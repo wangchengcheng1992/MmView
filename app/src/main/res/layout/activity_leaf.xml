@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fed255">
+    <!--android:background="#c63ee8"-->
+    <RelativeLayout
+        android:layout_centerInParent="true"
+        android:id="@+id/leaf_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <com.witness.view.leaf_progress_bar.LeafProgressBar
+            android:id="@+id/leaf_loading"
+            android:layout_width="302dp"
+            android:layout_height="61dp"
+            android:layout_centerHorizontal="true" />
+
+        <ImageView
+            android:id="@+id/fan_pic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignRight="@+id/leaf_loading"
+            android:layout_marginRight="5dp"
+            android:layout_centerVertical="true"
+            android:src="@mipmap/fengshan" />
+    </RelativeLayout>
+
+
+</RelativeLayout>

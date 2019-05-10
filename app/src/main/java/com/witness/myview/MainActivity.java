@@ -1,5 +1,6 @@
 package com.witness.myview;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,19 +10,24 @@ import android.widget.ImageView;
 
 import com.witness.view.leaf_progress_bar.AnimationUtils;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private ImageView mFanView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        findViewById(R.id.btn_leaf_progress_bar).setOnClickListener(this);
 
-        mFanView = findViewById(R.id.fan_pic);
-        RotateAnimation rotateAnimation = AnimationUtils.initRotateAnimation(false, 1500, true,
-                Animation.INFINITE);
-        mFanView.startAnimation(rotateAnimation);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btn_leaf_progress_bar:
+                Intent intent = new Intent(this, LeafActivity.class);
+                startActivity(intent);
+        }
     }
 }
