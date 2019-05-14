@@ -15,7 +15,7 @@ import com.witness.view.leaf_progress_bar.LeafProgressBar;
 import java.util.Random;
 
 public class LeafActivity extends Activity {
-
+//
     private static final int TAG = 1;
     private ImageView mFanView;
     private LeafProgressBar leafProgressBar;
