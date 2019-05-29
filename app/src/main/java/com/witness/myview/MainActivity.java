@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         findViewById(R.id.btn_leaf_progress_bar).setOnClickListener(this);
+        findViewById(R.id.btn_explosion_view).setOnClickListener(this);
 
     }
 
@@ -28,6 +29,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_leaf_progress_bar:
                 Intent intent = new Intent(this, LeafActivity.class);
                 startActivity(intent);
+                break;
+
+             case R.id.btn_explosion_view:
+                Intent intent1 = new Intent(this, ExplosionActivity.class);
+                startActivity(intent1);
+                break;
         }
     }
 }
