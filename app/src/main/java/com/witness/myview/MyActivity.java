@@ -14,5 +14,8 @@ public class MyActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explosion);
+        for (int i = 0; i <10 ; i++) {
+
+        }
     }
 }
