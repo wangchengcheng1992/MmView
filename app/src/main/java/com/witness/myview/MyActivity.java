@@ -3,6 +3,7 @@ package com.witness.myview;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 /**
  * @author: witness
@@ -26,5 +27,7 @@ public class MyActivity extends Activity {
         setContentView(R.layout.activity_explosion);
         setContentView(R.layout.activity_explosion);
 
+        Log.d("111", "11111");
+        Log.d("111", "11111");
     }
 }
