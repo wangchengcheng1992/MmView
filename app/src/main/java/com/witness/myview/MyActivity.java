@@ -29,5 +29,6 @@ public class MyActivity extends Activity {
 
         Log.d("111", "11111");
         Log.d("111", "11111");
+        Log.d("111", "11111");
     }
 }
