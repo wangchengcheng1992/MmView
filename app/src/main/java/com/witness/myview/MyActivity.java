@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.ImageView;
 
 /**
  * @author: witness
@@ -19,5 +20,6 @@ public class MyActivity extends Activity {
         for (int i = 0; i < 10; i++) {
             Log.d("1111111111","11111");
         }
+        ImageView iv = findViewById(R.id.iv);
     }
 }
