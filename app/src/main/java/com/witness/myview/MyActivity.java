@@ -20,6 +20,10 @@ public class MyActivity extends Activity {
         for (int i = 0; i < 10; i++) {
             Log.d("1111111111","11111");
         }
+
         ImageView iv = findViewById(R.id.iv);
+
+        Log.d("111","本地分支修改");
+
     }
 }
