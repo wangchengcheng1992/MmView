@@ -15,20 +15,9 @@ public class MyActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explosion);
-        for (int i = 0; i < 10; i++) {
-            int k = 0;
-        }
 
         for (int i = 0; i < 10; i++) {
-
+            Log.d("1111111111","11111");
         }
-        setContentView(R.layout.activity_explosion);
-
-        setContentView(R.layout.activity_explosion);
-        setContentView(R.layout.activity_explosion);
-
-        Log.d("111", "11111");
-        Log.d("111", "11111");
-        Log.d("111", "11111");
     }
 }
