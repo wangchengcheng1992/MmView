@@ -24,6 +24,7 @@ public class MyActivity extends Activity {
         ImageView iv = findViewById(R.id.iv);
 
         Log.d("111","本地分支修改");
+        Log.d("111","本地分支修改");
 
     }
 }
